@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/IBM/pgxpoolprometheus"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quay/zlog"
 	"github.com/remind101/migrate"
 	"go.opentelemetry.io/otel/baggage"
@@ -178,6 +180,10 @@ func (o *Opts) pool(ctx context.Context) (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Pool: %v", err)
 	}
+
+	collector := pgxpoolprometheus.NewCollector(pool, map[string]string{"application_name": "libvuln"})
+	prometheus.MustRegister(collector)
+
 	return pool, nil
 }
 
