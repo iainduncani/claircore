@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/IBM/pgxpoolprometheus"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/remind101/migrate"
 
 	"github.com/quay/claircore/internal/indexer"
@@ -34,6 +36,9 @@ func initDB(ctx context.Context, opts *Opts) (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ConnPool: %v", err)
 	}
+
+	collector := pgxpoolprometheus.NewCollector(pool, map[string]string{"application_name": "libindex"})
+	prometheus.MustRegister(collector)
 
 	return pool, nil
 }
