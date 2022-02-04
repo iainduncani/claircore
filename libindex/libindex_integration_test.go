@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/testingadapter"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quay/zlog"
 	"github.com/remind101/migrate"
 
@@ -120,7 +121,6 @@ func (tc testcase) RunInner(ctx context.Context, t *testing.T, dsn string, next 
 func (tc testcase) Run(ctx context.Context, check checkFunc) func(*testing.T) {
 	const dsnFmt = `host=%s port=%d database=%s user=%s password=%s sslmode=disable`
 	return func(t *testing.T) {
-		t.Parallel()
 		integration.NeedDB(t)
 		ctx := zlog.Test(ctx, t)
 		db, err := integration.NewDB(ctx, t)
@@ -139,6 +139,9 @@ func (tc testcase) Run(ctx context.Context, check checkFunc) func(*testing.T) {
 			t.Fatalf("failed to perform migrations: %v", err)
 		}
 
+		// Reset prometheus registerer as you can't register the same collector twice
+		prometheus.DefaultRegisterer = prometheus.NewRegistry()
+
 		// Can't use ConnString(), because it doesn't re-render the string.
 
 		tc.RunInner(ctx, t,
@@ -149,6 +152,7 @@ func (tc testcase) Run(ctx context.Context, check checkFunc) func(*testing.T) {
 				cfg.ConnConfig.User,
 				cfg.ConnConfig.Password),
 			check)
+
 	}
 }
 
