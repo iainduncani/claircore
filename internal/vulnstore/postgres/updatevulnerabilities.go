@@ -92,7 +92,7 @@ func updateVulnerabilites(ctx context.Context, pool *pgxpool.Pool, updater strin
 
 	start := time.Now()
 
-	if err := pool.QueryRow(ctx, create, updater, string(fingerprint)).Scan(&id, &ref); err != nil {
+	if err := tx.QueryRow(ctx, create, updater, string(fingerprint)).Scan(&id, &ref); err != nil {
 		return uuid.Nil, fmt.Errorf("failed to create update_operation: %w", err)
 	}
 

@@ -120,7 +120,7 @@ DO
 
 	start := time.Now()
 
-	if err := s.pool.QueryRow(ctx, create, name, string(fp)).Scan(&id, &ref); err != nil {
+	if err := tx.QueryRow(ctx, create, name, string(fp)).Scan(&id, &ref); err != nil {
 		return uuid.Nil, fmt.Errorf("failed to create update_operation: %w", err)
 	}
 
